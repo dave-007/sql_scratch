@@ -11,16 +11,18 @@ This query will output the desired pattern **Lname, Fname (MSP)**  where (MSP) m
 WITH Q1 AS(
   SELECT 
     CHARINDEX('(', Name) as LocParenthesis, 
-    CASEWHEN CHARINDEX('(', Name) > 0 THEN SUBSTRING(
+    CASE WHEN CHARINDEX('(', Name) > 0 THEN SUBSTRING(
       Name, 
       1, 
       CHARINDEX('(', Name)-2
-    ) ELSE NameEND AS Name, 
+    ) ELSE Name
+    END AS Name, 
     CASE WHEN CHARINDEX('(', Name) > 0 THEN SUBSTRING(
       Name, 
       CHARINDEX('(', Name), 
       LEN(Name)- CHARINDEX('(', Name)+ 2
-    ) ELSE '' END AS MSPFROM Names
+    ) ELSE '' END AS MSP
+    FROM Names
 ), 
 Q2 AS(
   SELECT 
@@ -35,17 +37,19 @@ Q2 AS(
     LEN(Name) - CHARINDEX(
       ' ', 
       REVERSE(Name)
-    )+ 1 AS LocLastSpaceFROM Q1
+    )+ 1 AS LocLastSpace
+    FROM Q1
 ), 
 Q3 AS(
-  SELECTName, 
+  SELECT Name, 
   SUBSTRING(
     Name, LocLastSpace, LenName - LocLastSpace + 1
   ) AS LastName, 
   SUBSTRING(Name, 1, LocLastSpace) AS FirstName, 
   SUBSTRING(
     Name, LocLastSpace, LenName - LocLastSpace + 1
-  ) + ', ' + SUBSTRING(Name, 1, LocLastSpace)+ MSP As LnameCommaFnameFROM Q2
+  ) + ', ' + SUBSTRING(Name, 1, LocLastSpace)+ MSP As LnameCommaFname
+  FROM Q2
 ) 
 SELECT 
   * 
